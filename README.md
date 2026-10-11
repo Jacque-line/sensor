@@ -1,92 +1,87 @@
-# TUGAS PROYEK KOTLIN: MULTI-SENSOR ANDROID
+# Tugas Proyek Kotlin: Multi-Sensor Android
 
-Aplikasi Android modern berbasis **Kotlin** dan **Jetpack Compose** yang memanfaatkan 3 sensor dari 3 kategori berbeda (*Motion*, *Environment*, dan *Position*) dengan efek visual dinamis langsung ke antarmuka pengguna (UI) serta manajemen siklus hidup (*lifecycle*) sensor yang tepat.
+Proyek ini bertujuan membuat aplikasi Android menggunakan Kotlin dan Jetpack Compose yang memanfaatkan tiga sensor berbeda, yaitu sensor gerak, sensor lingkungan, dan sensor posisi. Setiap sensor memiliki fungsi untuk mengubah tampilan aplikasi secara langsung.
 
----
+## 1. Sensor yang Digunakan
 
-## 📱 Daftar Sensor yang Digunakan
+1\. Accelerometer (sensor gerak)
 
-Aplikasi ini mengimplementasikan **3 sensor dari 3 kategori berbeda** untuk memenuhi dan melampaui syarat minimal tugas:
+&#x20;  Sensor ini mendeteksi kemiringan smartphone pada sumbu X, Y, dan Z. Data yang diperoleh digunakan untuk menggerakkan bola di dalam arena pada layar. Bola akan bergerak mengikuti kemiringan HP dan tetap berada di dalam batas arena.
 
-| No | Sensor | Kategori Sensor | Tipe Android Sensor | Efek Langsung ke Antarmuka (UI) |
-|---|---|---|---|---|
-| **1** | **Accelerometer** | **Motion Sensor** | `Sensor.TYPE_ACCELEROMETER` | **Menggerakkan Objek Bola Fisik**: Kemiringan smartphone pada sumbu X & Y secara instan menggerakkan bola di dalam arena interaktif dengan fisika batas dinding. |
-| **2** | **Ambient Light** | **Environment Sensor** | `Sensor.TYPE_LIGHT` | **Mengubah Tema Layar Secara Dinamis**: Mendeteksi intensitas cahaya (Lux). Saat redup/gelap (< 25 Lux), tema berubah menjadi *Dark Mode* dengan efek neon; saat terang (≥ 25 Lux), tema berubah menjadi *Light Mode*. |
-| **3** | **Proximity** | **Position Sensor** | `Sensor.TYPE_PROXIMITY` | **Memicu Perisai Energi (*Aura Shield*)**: Saat tangan didekatkan ke sensor jarak di bagian atas layar (< 5 cm), perisai energi bercahaya dan berdenyut muncul melingkupi bola, warna bola berubah menjadi merah-oranye, dan memicu *haptic feedback* (getaran). |
+2\. Ambient Light (sensor cahaya)
 
----
+&#x20;  Sensor ini mengukur tingkat cahaya di sekitar perangkat dalam satuan lux. Jika cahaya kurang dari 25 lux, aplikasi akan berubah menjadi mode gelap. Jika cahaya mencapai 25 lux atau lebih, aplikasi akan menggunakan mode terang.
 
-## 🔄 Pengaturan Lifecycle Sensor (Siklus Hidup)
+3\. Proximity (sensor jarak)
 
-Sesuai instruksi tugas, pengelolaan sensor diatur secara ketat pada siklus hidup Activity (`MainActivity.kt`):
+&#x20;  Sensor ini mendeteksi keberadaan objek yang berada dekat dengan bagian atas smartphone. Ketika tangan didekatkan ke sensor, perisai energi akan muncul di sekitar bola, warna bola berubah menjadi merah-oranye, dan HP memberikan getaran sebagai respons.
 
-```kotlin
-override fun onResume() {
-    super.onResume()
-    // Wajib: Mendaftarkan listener sensor saat aplikasi aktif di latar depan
-    sensorHelper.register()
-}
+## 2. Pengaturan Lifecycle Sensor
 
-override fun onPause() {
-    super.onPause()
-    // Wajib: Melepaskan listener sensor saat aplikasi masuk ke latar belakang
-    // untuk menghemat daya baterai perangkat
-    sensorHelper.unregister()
-}
-```
+Lifecycle adalah pengaturan aktivitas aplikasi agar sensor bekerja hanya ketika dibutuhkan.
 
-- **`onResume()`**: Sensor didaftarkan (*register*) dengan `SensorManager.registerListener()` menggunakan delay yang optimal (`SENSOR_DELAY_GAME` untuk Accelerometer dan `SENSOR_DELAY_UI` untuk Light & Proximity).
-- **`onPause()`**: Sensor dilepaskan (*unregister*) dengan `SensorManager.unregisterListener()` untuk mencegah *memory leak* dan pemborosan baterai saat layar mati atau pengguna membuka aplikasi lain.
-- **Indikator Live di UI**: Aplikasi menampilkan badge status lifecycle secara langsung di bagian kanan atas layar (`Lifecycle: onResume (Active)`).
+- onResume(): digunakan untuk mengaktifkan sensor ketika aplikasi berada di depan dan sedang digunakan.
+- onPause(): digunakan untuk menghentikan pembacaan sensor ketika aplikasi tidak lagi aktif di depan.
 
----
+Pengaturan ini membantu menghemat baterai dan mencegah sensor terus bekerja ketika aplikasi berada di latar belakang.
 
-## 🎨 Fitur Antarmuka (Jetpack Compose UI)
+Aplikasi juga menampilkan status lifecycle secara langsung agar pengguna dapat mengetahui apakah sensor sedang aktif atau tidak.
 
-1. **Dashboard Metrik Real-Time**:
-   - Kartu metrik live untuk masing-masing sensor (nilai X, Y, Z untuk Accelerometer, nilai Lux untuk Light, dan nilai jarak cm untuk Proximity).
-2. **Arena Bola Interaktif**:
-   - Objek bola yang merespons kemiringan HP secara halus.
-   - Efek lingkaran target konsentris dan dinding pembatas.
-3. **Efek Perisai Berdenyut (*Pulsating Shield*)**:
-   - Menggunakan animasi Jetpack Compose `rememberInfiniteTransition` dan `infiniteRepeatable` saat sensor proximity mendeteksi objek dekat.
-4. **Transisi Warna Animatif**:
-   - `animateColorAsState` untuk transisi pergantian tema siang/malam yang halus saat intensitas cahaya berubah.
-5. **Panel Pengujian Cepat (*Demo Mode*)**:
-   - Disediakan tombol pengujian cepat di dalam aplikasi sehingga dosen/penguji dapat dengan mudah menguji efek UI baik pada smartphone fisik maupun di Android Emulator.
+## 3. Fitur Antarmuka Aplikasi
 
----
+1\. Dashboard sensor
 
-## 🚀 Panduan Pengujian & Perekaman Video Demo
+&#x20;  Menampilkan data sensor secara langsung, seperti nilai X, Y, dan Z dari accelerometer, tingkat cahaya dalam lux, serta jarak objek dari sensor proximity.
 
-### Opsi A: Pengujian pada Smartphone Fisik (Rekomendasi)
-1. Pasang (*install*) aplikasi pada HP Android fisik melalui Android Studio (`Run 'app'`).
-2. **Tes Sensor 1 (Motion / Accelerometer)**:
-   - Miringkan HP ke kiri, kanan, atas, dan bawah.
-   - Perhatikan bola bergerak menggelinding mengikuti gravitasi kemiringan HP.
-3. **Tes Sensor 2 (Environment / Ambient Light)**:
-   - Tutup bagian atas HP (lokasi sensor cahaya) dengan tangan atau bawa HP ke tempat gelap.
-   - Amati tema aplikasi dan arena secara instan berganti ke mode gelap (*Dark Mode*).
-   - Buka kembali sensor cahaya ke arah lampu/ruangan terang untuk melihat tema kembali cerah.
-4. **Tes Sensor 3 (Position / Proximity)**:
-   - Dekatkan telapak tangan ke bagian atas layar HP (jarak < 5 cm).
-   - Amati perisai energi (*Shield*) berwarna oranye-merah muncul dan berdenyut di sekeliling bola serta badge status berubah menjadi merah "SHIELD AKTIF".
-   - Jauhkan tangan untuk mematikan perisai.
+2\. Arena bola interaktif
 
-### Opsi B: Pengujian pada Android Emulator
-1. Buka toolbar emulator, klik ikon **Titik Tiga (...)** (*Extended Controls*).
-2. Pilih tab **Virtual Sensors**:
-   - Ubah rotasi/kemiringan perangkat (*Device Pose*) untuk menguji Accelerometer.
-   - Ubah slider *Light (Lux)* untuk menguji Sensor Cahaya.
-   - Ubah status *Proximity* ke *Near* / *Far* untuk menguji Sensor Jarak.
-3. Atau gunakan tombol cepat pada kartu **Panel Pengujian Cepat** di dalam aplikasi.
+&#x20;  Menampilkan bola yang bergerak mengikuti kemiringan smartphone. Arena memiliki lingkaran target dan batas dinding agar bola tidak keluar dari area permainan.
 
----
+3\. Animasi perisai energi
 
-## 🛠️ Spesifikasi Teknologi
+&#x20;  Ketika sensor proximity mendeteksi objek dekat, perisai bercahaya akan muncul dan berdenyut di sekitar bola.
 
-- **Bahasa Pemrograman**: Kotlin 2.2+
-- **Toolkit UI**: Android Jetpack Compose (Material 3)
-- **Minimum SDK**: Android API 24 (Android 7.0 Nougat)
-- **Target SDK**: Android API 36 / 37
-- **Arsitektur**: State-Driven Reactive Compose dengan Kotlin Coroutines `StateFlow`
+4\. Perubahan tema otomatis
+
+&#x20;  Warna latar belakang dan elemen aplikasi berubah secara halus antara mode terang dan mode gelap berdasarkan intensitas cahaya.
+
+5\. Demo Mode
+
+&#x20;  Menyediakan tombol untuk menguji efek sensor secara langsung. Fitur ini berguna ketika aplikasi dijalankan pada emulator atau perangkat yang tidak memiliki sensor tertentu.
+
+## 4. Panduan Pengujian Aplikasi
+
+### A. Menggunakan smartphone fisik
+
+1. Jalankan aplikasi melalui Android Studio dan pasang pada smartphone.
+2. Miringkan HP ke berbagai arah untuk menguji pergerakan bola.
+3. Tutup sensor cahaya dengan tangan untuk menguji perubahan ke mode gelap.
+4. Arahkan sensor cahaya ke tempat terang untuk mengembalikan mode terang.
+5. Dekatkan tangan ke bagian atas HP untuk mengaktifkan perisai energi.
+6. Jauhkan tangan untuk menonaktifkan perisai.
+
+### B. Menggunakan Android Emulator
+
+1. Buka Android Emulator melalui Android Studio.
+2. Klik menu titik tiga untuk membuka Extended Controls.
+3. Pilih pengaturan Virtual Sensors jika tersedia.
+4. Ubah kemiringan perangkat untuk menguji accelerometer.
+5. Ubah nilai cahaya untuk menguji ambient light.
+6. Ubah status proximity menjadi Near atau Far untuk menguji sensor jarak.
+7. Jika sensor virtual tidak tersedia atau tidak berfungsi, gunakan tombol Demo Mode pada aplikasi.
+
+## 5. Teknologi yang Digunakan
+
+- Bahasa pemrograman: Kotlin versi 2.2 atau lebih baru.
+- Antarmuka: Jetpack Compose dengan Material 3.
+- Minimum SDK: Android API 24 atau Android 7.0.
+- Target SDK: Android API 36 atau 37.
+- Pengelolaan data: Kotlin Coroutines dan StateFlow.
+
+Jetpack Compose digunakan untuk membuat tampilan aplikasi yang interaktif, sedangkan StateFlow digunakan untuk mengirim perubahan data sensor ke antarmuka secara otomatis.
+
+## 6. Kesimpulan
+
+Proyek Multi-Sensor Android merupakan aplikasi yang menggabungkan tiga sensor dengan fungsi berbeda. Accelerometer digunakan untuk menggerakkan bola, ambient light untuk mengubah tema aplikasi, dan proximity untuk mengaktifkan perisai energi.
+
+Dengan menggunakan Kotlin, Jetpack Compose, dan pengelolaan lifecycle yang tepat, aplikasi dapat memberikan respons visual secara langsung sekaligus menghemat penggunaan baterai.
